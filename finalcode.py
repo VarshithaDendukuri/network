@@ -17,12 +17,12 @@ def calculate_centralities(G):
         'katz_centrality': nx.katz_centrality_numpy(G, 1 / phi - 0.01)
     }
 
-def global_relative_average_centrality(G, v):
+def global_relative_average_centrality(G, v, centrality_measure):
     avg_centrality_G = calculate_centralities(G)
     G_v_removed = G.copy()
     G_v_removed.remove_node(v)
     avg_centrality_G_v = calculate_centralities(G_v_removed)
-    return {key: (np.mean(list(avg_centrality_G_v[key].values())) - np.mean(list(avg_centrality_G[key].values()))) / np.mean(list(avg_centrality_G[key].values())) for key in avg_centrality_G}
+    return (np.mean(list(avg_centrality_G_v[centrality_measure].values())) - np.mean(list(avg_centrality_G[centrality_measure].values()))) / np.mean(list(avg_centrality_G[centrality_measure].values()))
 
 def local_relative_average_centrality(G, v, L, centrality_measure):
     neighbors = list(nx.single_source_shortest_path_length(G, v, cutoff=L).keys())
@@ -82,9 +82,10 @@ if uploaded_file:
     
     st.header("Global Centrality Analysis")
     global_node = st.selectbox("Select Node for Global Centrality", list(G.nodes()))
+    global_centrality_measure = st.selectbox("Choose Centrality Measure", list(calculate_centralities(G).keys()))
     
     if st.button("Compute Global Centrality"):
-        global_result = global_relative_average_centrality(G, global_node)
+        global_result = global_relative_average_centrality(G, global_node, global_centrality_measure)
         st.write(f"Global Relative Average Centrality for node {global_node}: {global_result}")
     
     st.header("SIR Epidemic Simulation")
