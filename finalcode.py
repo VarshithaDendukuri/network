@@ -22,7 +22,7 @@ def global_relative_average_centrality(G, v):
     G_v_removed = G.copy()
     G_v_removed.remove_node(v)
     avg_centrality_G_v = calculate_centralities(G_v_removed)
-    return {key: (avg_centrality_G_v[key][v] - avg_centrality_G[key][v]) / avg_centrality_G[key][v] for key in avg_centrality_G if v in avg_centrality_G[key]}
+    return {key: (np.mean(list(avg_centrality_G_v[key].values())) - np.mean(list(avg_centrality_G[key].values()))) / np.mean(list(avg_centrality_G[key].values())) for key in avg_centrality_G}
 
 def local_relative_average_centrality(G, v, L, centrality_measure):
     neighbors = list(nx.single_source_shortest_path_length(G, v, cutoff=L).keys())
