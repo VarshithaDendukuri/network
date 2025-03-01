@@ -6,7 +6,6 @@ import random
 import math
 import matplotlib.pyplot as plt
 
-# Function to calculate different centralities
 def calculate_centralities(G):
     phi = (1 + math.sqrt(5)) / 2.0
     return {
@@ -18,12 +17,10 @@ def calculate_centralities(G):
         'katz_centrality': nx.katz_centrality_numpy(G, 1 / phi - 0.01)
     }
 
-# Function to compute average centralities
 def average_centrality(G):
     centralities = calculate_centralities(G)
     return {measure: np.mean(list(values.values())) for measure, values in centralities.items()}
 
-# Function to calculate global relative average centrality
 def global_relative_average_centrality(G, v):
     avg_centrality_G = average_centrality(G)
     G_v_removed = G.copy()
@@ -31,7 +28,6 @@ def global_relative_average_centrality(G, v):
     avg_centrality_G_v = average_centrality(G_v_removed)
     return {key: (avg_centrality_G_v[key] - avg_centrality_G[key]) / avg_centrality_G[key] for key in avg_centrality_G}
 
-# Function to calculate local relative average centrality
 def local_relative_average_centrality(G, v, L, centrality_measure):
     neighbors = set([v])
     for _ in range(L):
@@ -49,7 +45,6 @@ def local_relative_average_centrality(G, v, L, centrality_measure):
     
     return (average_centrality_H_without_v - average_centrality_H) / average_centrality_H
 
-# SIR epidemic simulation function
 def sir_simulation(G, beta, gamma, initial_infected, steps=50):
     S = set(G.nodes()) - {initial_infected}
     I = {initial_infected}
@@ -73,7 +68,6 @@ def sir_simulation(G, beta, gamma, initial_infected, steps=50):
     
     return history
 
-# Function to plot SIR model results
 def plot_sir(history):
     S_vals, I_vals, R_vals = zip(*history)
     plt.figure(figsize=(10, 5))
@@ -85,7 +79,6 @@ def plot_sir(history):
     plt.legend()
     st.pyplot(plt)
 
-# Main function for Streamlit app
 def main():
     st.title("Graph Centrality Analysis & SIR Simulation")
     uploaded_file = st.file_uploader("Upload an edge list file", type=["txt", "csv"])
@@ -98,14 +91,14 @@ def main():
         
         st.write(f"Graph loaded with {G.number_of_nodes()} nodes and {G.number_of_edges()} edges.")
         
-        # Global Centrality Analysis
+        if 'global_centralities' not in st.session_state:
+            st.session_state.global_centralities = {v: global_relative_average_centrality(G, v) for v in G.nodes()}
+            df_centralities = pd.DataFrame.from_dict(st.session_state.global_centralities, orient='index')
+            st.session_state.df_top_centralities = df_centralities.abs().sum(axis=1).nlargest(10)
+        
         st.header("Global Centrality Analysis")
-        global_centralities = {v: global_relative_average_centrality(G, v) for v in G.nodes()}
-        df_centralities = pd.DataFrame.from_dict(global_centralities, orient='index')
-        df_top_centralities = df_centralities.abs().sum(axis=1).nlargest(10)
-        st.dataframe(df_top_centralities)
-
-        # Local Centrality Analysis
+        st.dataframe(st.session_state.df_top_centralities)
+        
         st.header("Local Centrality Analysis")
         v = random.choice(list(G.nodes))
         L = st.slider("Select Level L", min_value=1, max_value=5, value=2)
@@ -115,9 +108,8 @@ def main():
             local_result = local_relative_average_centrality(G, v, L, centrality_measure)
             st.write(f"Local Relative Average Centrality for node {v}: {local_result}")
             st.write("### Top 10 Influential Nodes in Global Analysis")
-            st.dataframe(df_top_centralities)  # Ensuring global results stay visible
-
-        # SIR Model Simulation
+            st.dataframe(st.session_state.df_top_centralities)
+        
         st.header("SIR Epidemic Simulation")
         beta = st.slider("Infection Rate (β)", min_value=0.01, max_value=1.0, value=0.1, step=0.01)
         gamma = st.slider("Recovery Rate (γ)", min_value=0.01, max_value=1.0, value=0.05, step=0.01)
