@@ -101,11 +101,6 @@ def main():
             local_result = local_relative_average_centrality(G, v, L, centrality_measure)
             st.write(f"Local Relative Average Centrality for node {v}: {local_result}")
         
-        st.header("Global Centrality Analysis")
-        if st.button("Compute Global Centralities"):
-            global_centralities = {v: global_relative_average_centrality(G, v) for v in G.nodes()}
-            df_centralities = pd.DataFrame.from_dict(global_centralities, orient='index')
-            st.dataframe(df_centralities)
         
         st.header("SIR Epidemic Simulation")
         beta = st.slider("Infection Rate (β)", min_value=0.01, max_value=1.0, value=0.1, step=0.01)
