@@ -60,10 +60,10 @@ def plot_sir(history):
 
 st.title("Network Analysis Tool")
 
-uploaded_file = st.file_uploader("Upload Graph (Edge List CSV)", type=["csv"])
+uploaded_file = st.file_uploader("Upload Graph (Edge List CSV or TXT)", type=["csv", "txt"])
 
 if uploaded_file:
-    df = pd.read_csv(uploaded_file, header=None)
+    df = pd.read_csv(uploaded_file, delim_whitespace=True, header=None)
     G = nx.from_pandas_edgelist(df, source=0, target=1)
     
     st.header("Global Centrality Analysis")
@@ -89,4 +89,4 @@ if uploaded_file:
         sir_results = sir_model(G, beta, gamma)
         plot_sir(sir_results)
 
-st.write("Upload a network graph as a CSV file with two columns representing edges.")
+st.write("Upload a network graph as a CSV or TXT file with two columns representing edges.")
