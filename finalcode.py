@@ -75,6 +75,8 @@ if uploaded_file:
         st.session_state.local_result = None
     if "global_result" not in st.session_state:
         st.session_state.global_result = None
+    if "global_node" not in st.session_state:
+        st.session_state.global_node = None
     
     st.header("Local Centrality Analysis")
     L = st.slider("Select Level L", 1, 5, 2, key="local_L")
@@ -89,7 +91,7 @@ if uploaded_file:
         st.write(f"Local Relative Average Centrality for node {st.session_state.local_node}: {st.session_state.local_result}")
     
     st.header("Global Centrality Analysis")
-    global_node = st.selectbox("Select Node for Global Centrality", list(G.nodes()), key="global_node")
+    global_node = st.selectbox("Select Node for Global Centrality", list(G.nodes()), key="global_node_select")
     global_centrality_measure = st.selectbox("Choose Centrality Measure", list(calculate_centralities(G).keys()), key="global_centrality_measure")
     
     if st.button("Compute Global Centrality", key="compute_global"):
