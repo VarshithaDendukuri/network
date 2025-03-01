@@ -80,7 +80,7 @@ def plot_sir(history):
     st.pyplot(plt)
 
 def main():
-    st.title("Network Analysis with Centralities & SIR Model")
+    st.title("Graph Centrality and Epidemic Simulation")
     uploaded_file = st.file_uploader("Upload an edge list file", type=["txt", "csv"])
     
     if uploaded_file is not None:
@@ -91,19 +91,20 @@ def main():
         
         st.write(f"Graph loaded with {G.number_of_nodes()} nodes and {G.number_of_edges()} edges.")
         
-        if st.button("Compute Global Centralities"):
-            global_centralities = {v: global_relative_average_centrality(G, v) for v in G.nodes()}
-            df_centralities = pd.DataFrame.from_dict(global_centralities, orient='index')
-            st.dataframe(df_centralities)
-        
-        st.header("Local Relative Average Centrality")
-        v = st.selectbox("Select Node for Local Centrality", list(G.nodes()))
+        st.header("Local Centrality Analysis")
+        v = random.choice(list(G.nodes))
         L = st.slider("Select Level L", min_value=1, max_value=5, value=2)
         centrality_measure = st.selectbox("Choose Centrality Measure", ['degree_centrality', 'closeness_centrality', 'betweenness_centrality', 'eigenvector_centrality', 'katz_centrality'])
         
         if st.button("Compute Local Centrality"):
-            result = local_relative_average_centrality(G, v, L, centrality_measure)
-            st.write(f"Local Relative Average Centrality for node {v}: {result}")
+            local_result = local_relative_average_centrality(G, v, L, centrality_measure)
+            st.write(f"Local Relative Average Centrality for node {v}: {local_result}")
+        
+        st.header("Global Centrality Analysis")
+        if st.button("Compute Global Centralities"):
+            global_centralities = {v: global_relative_average_centrality(G, v) for v in G.nodes()}
+            df_centralities = pd.DataFrame.from_dict(global_centralities, orient='index')
+            st.dataframe(df_centralities)
         
         st.header("SIR Epidemic Simulation")
         beta = st.slider("Infection Rate (β)", min_value=0.01, max_value=1.0, value=0.1, step=0.01)
