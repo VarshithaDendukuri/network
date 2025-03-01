@@ -61,6 +61,11 @@ def plot_sir(history):
     plt.legend()
     st.pyplot(plt)
 
+def top_influential_nodes(G, centrality_measure, top_n=10):
+    centralities = calculate_centralities(G)[centrality_measure]
+    sorted_nodes = sorted(centralities.items(), key=lambda x: x[1], reverse=True)[:top_n]
+    return sorted_nodes
+
 st.title("Graph Centrality and Epidemic Simulation")
 
 uploaded_file = st.file_uploader("Upload an edge list file", type=["csv", "txt"])
@@ -100,6 +105,15 @@ if uploaded_file:
     
     if st.session_state.global_result is not None:
         st.write(f"Global Relative Average Centrality for node {st.session_state.global_node}: {st.session_state.global_result}")
+    
+    st.header("Top 10 Influential Nodes")
+    top_centrality_measure = st.selectbox("Choose Centrality Measure for Top Nodes", list(calculate_centralities(G).keys()), key="top_centrality_measure")
+    
+    if st.button("Compute Top 10 Influential Nodes", key="compute_top"):
+        top_nodes = top_influential_nodes(G, top_centrality_measure)
+        st.write("Top 10 Nodes by Centrality:")
+        for node, value in top_nodes:
+            st.write(f"Node {node}: {value}")
     
     st.header("SIR Epidemic Simulation")
     beta = st.slider("Infection Rate (β)", 0.01, 1.0, 0.1, 0.01, key="beta")
