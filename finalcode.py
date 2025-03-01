@@ -103,9 +103,11 @@ if uploaded_file:
     top_centrality_measure = st.selectbox("Choose Centrality Measure for Top Nodes", list(calculate_centralities(G).keys()), key="top_centrality_measure")
     
     if st.button("Compute Top 10 Influential Nodes", key="compute_top"):
-        top_nodes = top_influential_nodes(G, top_centrality_measure)
-        st.write("### Top 10 Nodes by Centrality")
-        st.table(pd.DataFrame(top_nodes, columns=["Node", "Centrality Value"]))
+        st.session_state.top_nodes = top_influential_nodes(G, top_centrality_measure)
+    
+    if st.session_state.get("top_nodes"):
+        st.write("### Top 10 Nodes by Centrality (Persistent View)")
+        st.table(pd.DataFrame(st.session_state.top_nodes, columns=["Node", "Centrality Value"]))
     
     st.header("🦠 SIR Epidemic Simulation")
     beta = st.slider("Infection Rate (β)", 0.01, 1.0, 0.1, 0.01, key="beta")
@@ -115,7 +117,3 @@ if uploaded_file:
     if st.button("Run SIR Simulation", key="run_sir"):
         history = sir_model(G, beta, gamma, initial_infected)
         plot_sir(history)
-    
-    if st.session_state.get("compute_top"):
-        st.write("### Top 10 Nodes by Centrality (Persistent View)")
-        st.table(pd.DataFrame(top_nodes, columns=["Node", "Centrality Value"]))
