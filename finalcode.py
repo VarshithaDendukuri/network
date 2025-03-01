@@ -133,5 +133,5 @@ def main():
             history = sir_simulation(G, beta, gamma, initial_infected)
             plot_sir(history)
 
-if _name_ == "_main_":
+if __name__ == "__main__":
     main()
