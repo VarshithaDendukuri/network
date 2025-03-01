@@ -30,8 +30,8 @@ def local_relative_average_centrality(G, v, L, centrality_measure):
     centrality = calculate_centralities(subgraph)
     return centrality[centrality_measure][v]
 
-def sir_model(G, beta, gamma, steps=50):
-    infected = set(np.random.choice(list(G.nodes()), size=1))
+def sir_model(G, beta, gamma, initial_infected, steps=50):
+    infected = {initial_infected}
     recovered = set()
     susceptible = set(G.nodes()) - infected
     
@@ -45,7 +45,7 @@ def sir_model(G, beta, gamma, steps=50):
         
         recovered.update(node for node in infected if np.random.rand() < gamma)
         infected = (infected | new_infected) - recovered
-        susceptible = susceptible - infected
+        susceptible -= infected
         sir_results.append((len(susceptible), len(infected), len(recovered)))
     
     return sir_results
@@ -72,27 +72,27 @@ if uploaded_file:
     st.write(f"Graph loaded with {G.number_of_nodes()} nodes and {G.number_of_edges()} edges.")
     
     st.header("Local Centrality Analysis")
-    L = st.slider("Select Level L", 1, 5, 2)
-    centrality_measure = st.selectbox("Choose Centrality Measure", list(calculate_centralities(G).keys()))
+    L = st.slider("Select Level L", 1, 5, 2, key="local_L")
+    centrality_measure = st.selectbox("Choose Centrality Measure", list(calculate_centralities(G).keys()), key="local_centrality_measure")
     
-    if st.button("Compute Local Centrality"):
+    if st.button("Compute Local Centrality", key="compute_local"):
         v = random.choice(list(G.nodes()))
         local_result = local_relative_average_centrality(G, v, L, centrality_measure)
         st.write(f"Local Relative Average Centrality for node {v}: {local_result}")
     
     st.header("Global Centrality Analysis")
-    global_node = st.selectbox("Select Node for Global Centrality", list(G.nodes()))
-    global_centrality_measure = st.selectbox("Choose Centrality Measure", list(calculate_centralities(G).keys()))
+    global_node = st.selectbox("Select Node for Global Centrality", list(G.nodes()), key="global_node")
+    global_centrality_measure = st.selectbox("Choose Centrality Measure", list(calculate_centralities(G).keys()), key="global_centrality_measure")
     
-    if st.button("Compute Global Centrality"):
+    if st.button("Compute Global Centrality", key="compute_global"):
         global_result = global_relative_average_centrality(G, global_node, global_centrality_measure)
         st.write(f"Global Relative Average Centrality for node {global_node}: {global_result}")
     
     st.header("SIR Epidemic Simulation")
-    beta = st.slider("Infection Rate (β)", 0.01, 1.0, 0.1, 0.01)
-    gamma = st.slider("Recovery Rate (γ)", 0.01, 1.0, 0.05, 0.01)
-    initial_infected = st.selectbox("Select Initial Infected Node", list(G.nodes()))
+    beta = st.slider("Infection Rate (β)", 0.01, 1.0, 0.1, 0.01, key="beta")
+    gamma = st.slider("Recovery Rate (γ)", 0.01, 1.0, 0.05, 0.01, key="gamma")
+    initial_infected = st.selectbox("Select Initial Infected Node", list(G.nodes()), key="initial_infected")
     
-    if st.button("Run SIR Simulation"):
+    if st.button("Run SIR Simulation", key="run_sir"):
         history = sir_model(G, beta, gamma, initial_infected)
         plot_sir(history)
