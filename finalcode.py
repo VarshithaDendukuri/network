@@ -62,10 +62,14 @@ def sir_model(G, beta, gamma, initial_infected, steps):
 st.title("Network Centrality Analysis with SIR Model")
 
 # File uploader
-uploaded_file = st.file_uploader("Upload an edge list CSV file", type=["csv"])
+uploaded_file = st.file_uploader("Upload an edge list CSV or TXT file", type=["csv", "txt"])
 
 if uploaded_file:
-    df = pd.read_csv(uploaded_file)
+    if uploaded_file.name.endswith(".csv"):
+        df = pd.read_csv(uploaded_file)
+    else:
+        df = pd.read_csv(uploaded_file, delim_whitespace=True, header=None, names=["Source", "Target"])
+    
     G = nx.from_pandas_edgelist(df, source=df.columns[0], target=df.columns[1])
     
     # Global Centrality Analysis
