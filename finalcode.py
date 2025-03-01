@@ -2,13 +2,12 @@ import streamlit as st
 import networkx as nx
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 import random
 import math
-import matplotlib.pyplot as plt
 
-# Function to calculate centralities
 def calculate_centralities(G):
-    phi = (1 + math.sqrt(5)) / 2.0  # Golden Ratio
+    phi = (1 + math.sqrt(5)) / 2.0
     return {
         'degree_centrality': nx.degree_centrality(G),
         'closeness_centrality': nx.closeness_centrality(G),
@@ -18,62 +17,36 @@ def calculate_centralities(G):
         'katz_centrality': nx.katz_centrality_numpy(G, 1 / phi - 0.01)
     }
 
-# Function to compute average centrality of a graph
-def average_centrality(G):
-    centralities = calculate_centralities(G)
-    return {measure: np.mean(list(values.values())) for measure, values in centralities.items()}
-
-# Global relative average centrality calculation
 def global_relative_average_centrality(G, v):
-    avg_centrality_G = average_centrality(G)
-    G_v_removed = G.copy()
-    G_v_removed.remove_node(v)
-    avg_centrality_G_v = average_centrality(G_v_removed)
-    return {key: (avg_centrality_G_v[key] - avg_centrality_G[key]) / avg_centrality_G[key] for key in avg_centrality_G}
+    centrality = calculate_centralities(G)
+    return {key: centrality[key][v] for key in centrality}
 
-# Local relative average centrality calculation
 def local_relative_average_centrality(G, v, L, centrality_measure):
-    neighbors = {v}
-    for _ in range(L):
-        level_neighbors = set()
-        for node in neighbors:
-            level_neighbors.update(G.neighbors(node))
-        neighbors.update(level_neighbors)
+    neighbors = list(nx.single_source_shortest_path_length(G, v, cutoff=L).keys())
+    subgraph = G.subgraph(neighbors)
+    centrality = calculate_centralities(subgraph)
+    return centrality[centrality_measure][v]
 
-    H = G.subgraph(neighbors)
-    average_centrality_H = np.mean(list(calculate_centralities(H)[centrality_measure].values()))
-
-    neighbors_without_v = neighbors - {v}
-    H_without_v = G.subgraph(neighbors_without_v)
-    average_centrality_H_without_v = np.mean(list(calculate_centralities(H_without_v)[centrality_measure].values()))
-
-    return (average_centrality_H_without_v - average_centrality_H) / average_centrality_H
-
-# SIR epidemic simulation
-def sir_simulation(G, beta, gamma, initial_infected, steps=50):
-    S = set(G.nodes()) - {initial_infected}
-    I = {initial_infected}
-    R = set()
-
-    history = []
+def sir_model(G, beta, gamma, steps=10):
+    infected = set(np.random.choice(list(G.nodes()), size=1))
+    recovered = set()
+    susceptible = set(G.nodes()) - infected
+    
+    sir_results = []
     for _ in range(steps):
         new_infected = set()
-        for node in I:
+        for node in infected:
             for neighbor in G.neighbors(node):
-                if neighbor in S and random.random() < beta:
+                if neighbor in susceptible and np.random.rand() < beta:
                     new_infected.add(neighbor)
+        
+        recovered.update(node for node in infected if np.random.rand() < gamma)
+        infected = (infected | new_infected) - recovered
+        susceptible = susceptible - infected
+        sir_results.append((len(susceptible), len(infected), len(recovered)))
+    
+    return sir_results
 
-        recovered = {node for node in I if random.random() < gamma}
-
-        S -= new_infected
-        I = (I | new_infected) - recovered
-        R |= recovered
-
-        history.append((len(S), len(I), len(R)))
-
-    return history
-
-# Function to plot SIR simulation results
 def plot_sir(history):
     S_vals, I_vals, R_vals = zip(*history)
     plt.figure(figsize=(10, 5))
@@ -85,55 +58,35 @@ def plot_sir(history):
     plt.legend()
     st.pyplot(plt)
 
-# Streamlit App
-def main():
-    st.title("Graph Centrality Analysis & SIR Simulation")
-    uploaded_file = st.file_uploader("Upload an edge list file", type=["txt", "csv"])
+st.title("Network Analysis Tool")
+
+uploaded_file = st.file_uploader("Upload Graph (Edge List CSV)", type=["csv"])
+
+if uploaded_file:
+    df = pd.read_csv(uploaded_file, header=None)
+    G = nx.from_pandas_edgelist(df, source=0, target=1)
     
-    if uploaded_file is not None:
-        # Load Graph
-        G = nx.Graph()
-        df = pd.read_csv(uploaded_file, delim_whitespace=True, header=None)
-        for _, row in df.iterrows():
-            G.add_edge(int(row[0]) - 1, int(row[1]) - 1)
+    st.header("Global Centrality Analysis")
+    global_centralities = {v: global_relative_average_centrality(G, v) for v in G.nodes()}
+    df_global = pd.DataFrame.from_dict(global_centralities, orient='index')
+    st.dataframe(df_global)
+    
+    st.subheader("Top 10 Influencing Nodes")
+    st.dataframe(df_global.nlargest(10, 'degree_centrality'))
+    
+    st.header("Local Centrality Analysis")
+    L = st.slider("Select Level L", 1, 5, 2)
+    centrality_measure = st.selectbox("Choose Centrality Measure", list(calculate_centralities(G).keys()))
+    if st.button("Compute Local Centrality"):
+        local_centralities = {v: local_relative_average_centrality(G, v, L, centrality_measure) for v in G.nodes()}
+        df_local = pd.DataFrame.from_dict(local_centralities, orient='index', columns=[centrality_measure])
+        st.dataframe(df_local)
+    
+    st.header("SIR Model Simulation")
+    beta = st.slider("Infection Rate (Beta)", 0.0, 1.0, 0.2)
+    gamma = st.slider("Recovery Rate (Gamma)", 0.0, 1.0, 0.1)
+    if st.button("Run SIR Model"):
+        sir_results = sir_model(G, beta, gamma)
+        plot_sir(sir_results)
 
-        st.write(f"Graph loaded with {G.number_of_nodes()} nodes and {G.number_of_edges()} edges.")
-
-        # Compute Global Centrality if not already done
-        if 'global_centralities' not in st.session_state:
-            st.session_state.global_centralities = {v: global_relative_average_centrality(G, v) for v in G.nodes()}
-            df_centralities = pd.DataFrame.from_dict(st.session_state.global_centralities, orient='index')
-            st.session_state.df_top_centralities = df_centralities.abs().sum(axis=1).nlargest(10)
-
-        # Display Global Centrality
-        st.header("Global Centrality Analysis")
-        st.dataframe(st.session_state.df_top_centralities)
-
-        # Local Centrality Analysis
-        st.header("Local Centrality Analysis")
-        v = random.choice(list(G.nodes))
-        L = st.slider("Select Level L", min_value=1, max_value=5, value=2)
-        centrality_measure = st.selectbox("Choose Centrality Measure", [
-            'degree_centrality', 'closeness_centrality', 'betweenness_centrality', 'eigenvector_centrality', 'katz_centrality'
-        ])
-        
-        if st.button("Compute Local Centrality"):
-            local_result = local_relative_average_centrality(G, v, L, centrality_measure)
-            st.write(f"Local Relative Average Centrality for node {v}: {local_result}")
-
-            # Show Global Results
-            st.write("### Top 10 Influential Nodes in Global Analysis")
-            st.dataframe(st.session_state.df_top_centralities)
-
-        # SIR Model Simulation
-        st.header("SIR Epidemic Simulation")
-        beta = st.slider("Infection Rate (β)", min_value=0.01, max_value=1.0, value=0.1, step=0.01)
-        gamma = st.slider("Recovery Rate (γ)", min_value=0.01, max_value=1.0, value=0.05, step=0.01)
-        initial_infected = st.selectbox("Select Initial Infected Node", list(G.nodes()))
-
-        if st.button("Run SIR Simulation"):
-            history = sir_simulation(G, beta, gamma, initial_infected)
-            plot_sir(history)
-
-if __name__ == "__main__":
-    main()
+st.write("Upload a network graph as a CSV file with two columns representing edges.")
