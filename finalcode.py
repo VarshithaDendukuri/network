@@ -116,6 +116,4 @@ if uploaded_file:
         history = sir_model(G, beta, gamma, initial_infected)
         plot_sir(history)
     
-    if st.session_state.get("compute_top"):
-        st.write("### Top 10 Nodes by Centrality")
-        st.table(pd.DataFrame(top_influential_nodes(G, top_centrality_measure), columns=["Node", "Centrality Value"]))
+    
