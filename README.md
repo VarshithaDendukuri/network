@@ -1,64 +1,45 @@
-# 📊 Graph Centrality and Epidemic Simulation using Streamlit
+📊 Network Influencers – Graph Centrality & Epidemic Simulation
+🌐 Live Demo: Network Influencers
+🚀 Overview
+Network Influencers is an interactive tool for graph analysis and epidemic simulation using Streamlit and NetworkX. It enables users to:
+✅ Analyze local and global centrality of nodes
+✅ Identify the top 10 most influential nodes
+✅ Simulate the SIR (Susceptible-Infected-Recovered) epidemic model
 
-## 🚀 Overview
-This project is a **Streamlit**-based web application for analyzing graph centrality and simulating epidemic spread using the **SIR model**. It allows users to:
-- Upload graph data (edge lists)
-- Analyze **local** and **global** centrality measures
-- Identify **top 10 influential nodes**
-- Simulate the **SIR (Susceptible-Infected-Recovered) model** on a given graph
+✨ Key Features
+🔹 Upload Graph Data (CSV/TXT edge list)
+🔹 Local & Global Centrality Analysis
+🔹 Persistent View of Top 10 Influential Nodes
+🔹 SIR Epidemic Spread Simulation
+🔹 User-Friendly, Interactive UI
 
-## 🎯 Features
-- **Graph Upload & Visualization**: Load graph data and visualize key statistics.
-- **Local & Global Centrality Analysis**: Compute various centrality measures for nodes.
-- **Top 10 Influential Nodes**: Identify the most influential nodes based on centrality.
-- **SIR Epidemic Simulation**: Model disease spread dynamics and visualize results interactively.
-- **Persistent View**: Top nodes and centrality results remain visible even when running the SIR model.
+📥 Installation & Setup
+To run the project locally:
 
-## 🏗️ Tech Stack
-- **Python** (Core logic)
-- **Streamlit** (Frontend UI)
-- **NetworkX** (Graph computations)
-- **Matplotlib** (Plotting results)
-- **Pandas** (Data handling)
-- **NumPy** (Scientific computations)
+sh
+Copy
+Edit
+# Clone the repository
+git clone https://github.com/your-repo/network-influencers.git
+cd network-influencers
 
-## 📦 Installation
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/your-username/your-repo.git
-   cd your-repo
-   ```
-2. **Create a virtual environment** (Optional but recommended):
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
-3. **Install dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
-4. **Run the application**:
-   ```bash
-   streamlit run finalcode.py
-   ```
+# Install dependencies
+pip install -r requirements.txt
 
-## 📂 Usage
-1. Upload a graph edge list file (`.csv` or `.txt`).
-2. Choose centrality measures and compute:
-   - **Local Centrality Analysis**
-   - **Global Centrality Analysis**
-3. Get **Top 10 Influential Nodes**.
-4. Run **SIR Model Simulation** and visualize epidemic spread.
+# Run the application
+streamlit run app.py
+📌 How to Use
+1️⃣ Upload a graph edge list (CSV or TXT format)
+2️⃣ Select a centrality measure and analyze local/global influence
+3️⃣ View the top 10 most influential nodes (persistent output)
+4️⃣ Run the SIR epidemic model to observe virus spread
 
-## 📸 Screenshots
-![Graph Centrality UI](https://via.placeholder.com/800x400.png?text=Graph+Centrality+Analysis)
-
-## 🤝 Contributing
-Contributions are welcome! Feel free to **fork** the repo, create a **pull request**, or open an **issue** for feature suggestions.
-
-## 📜 License
-This project is **MIT Licensed**. Feel free to use and modify it.
-
----
-💡 _Developed with passion using Streamlit & NetworkX!_ 🚀
+🛠 Built With
+Python 🐍
+Streamlit 🎨 (for UI)
+NetworkX 🔗 (for graph analysis)
+Matplotlib 📊 (for visualization)
+Pandas & NumPy 📑 (for data handling)
+🤝 Contributing
+Want to improve this project? Fork the repo, make your changes, and submit a pull request!
 
