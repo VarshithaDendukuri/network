@@ -34,20 +34,30 @@ def plot_centrality_vs_infected(G, beta):
     random_node = random.choice(list(G.nodes()))
     centralities = calculate_centralities(G)
 
+    lrac = sir_model(G, beta, 0.02, random_node)
+    grac = sir_model(G, beta, 0.02, random_node)
+    degree = centralities['Degree Centrality'][random_node]
+    closeness = centralities['Closeness Centrality'][random_node]
+    betweenness = centralities['Betweenness Centrality'][random_node]
+
     results = {
-        "LRAC": sir_model(G, beta, 0.02, random_node),
-        "GRAC": sir_model(G, beta, 0.02, random_node),
-        "Degree Centrality": centralities['Degree Centrality'][random_node],
-        "Closeness Centrality": centralities['Closeness Centrality'][random_node],
-        "Betweenness Centrality": centralities['Betweenness Centrality'][random_node]
+        "LRAC": lrac,
+        "GRAC": grac,
+        "Degree Centrality": degree,
+        "Closeness Centrality": closeness,
+        "Betweenness Centrality": betweenness
     }
 
     plt.figure(figsize=(10, 6))
-    plt.bar(results.keys(), results.values(), color='skyblue')
+    bars = plt.bar(results.keys(), results.values(), color='skyblue')
     plt.title(f"Comparison of SIR Model Results for Different Centrality Measures")
     plt.xlabel("Centrality Measure")
     plt.ylabel(f"Number of Infected Nodes (β={beta:.2f})")
     plt.grid(True)
+
+    for bar, value in zip(bars, results.values()):
+        plt.text(bar.get_x() + bar.get_width() / 2, bar.get_height(), f'{value:.2f}', ha='center', va='bottom')
+
     st.pyplot(plt)
 
 st.title("📊 Centrality vs Infection Rate Visualization")
