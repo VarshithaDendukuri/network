@@ -115,7 +115,7 @@ if uploaded_file:
         history = sir_model(G, beta, gamma, initial_infected)
         plot_sir(history)
 
-    st.header("Centrality Measures vs Infection Rate")
+    st.header("Comparision for sir model and centrality measures")
     data = {
         "Beta": [0.02, 0.04, 0.06, 0.08, 0.10, 0.12, 0.14, 0.15, 0.20, 0.30],
         "LRAC": [299, 378, 420, 425, 435, 443, 446, 439, 449, 452],
