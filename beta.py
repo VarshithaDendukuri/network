@@ -9,7 +9,7 @@ def calculate_centralities(G):
     return {
         'Degree Centrality': nx.degree_centrality(G),
         'Closeness Centrality': nx.closeness_centrality(G),
-        'Betweenness Centrality': nx.betweenness_centrality(G),
+        'Betweenness Centrality': nx.betweenness_centrality(G)
     }
 
 def sir_model(G, beta, gamma, initial_infected, steps=50):
@@ -34,16 +34,27 @@ def plot_centrality_vs_infected(G, beta):
     random_node = random.choice(list(G.nodes()))
     centralities = calculate_centralities(G)
 
+    sir_infected = sir_model(G, beta, 0.02, random_node)
+    
+    # Normalize Centrality Values
+    max_degree = max(centralities['Degree Centrality'].values())
+    max_closeness = max(centralities['Closeness Centrality'].values())
+    max_betweenness = max(centralities['Betweenness Centrality'].values())
+    
+    normalized_degree = centralities['Degree Centrality'][random_node] * sir_infected / max_degree
+    normalized_closeness = centralities['Closeness Centrality'][random_node] * sir_infected / max_closeness
+    normalized_betweenness = centralities['Betweenness Centrality'][random_node] * sir_infected / max_betweenness
+
     results = {
-        "LRAC": sir_model(G, beta, 0.02, random_node),
-        "GRAC": sir_model(G, beta, 0.02, random_node),
-        "Degree Centrality": centralities['Degree Centrality'][random_node],
-        "Closeness Centrality": centralities['Closeness Centrality'][random_node],
-        "Betweenness Centrality": centralities['Betweenness Centrality'][random_node]
+        "LRAC": sir_infected,
+        "GRAC": sir_infected,
+        "Degree Centrality": normalized_degree,
+        "Closeness Centrality": normalized_closeness,
+        "Betweenness Centrality": normalized_betweenness
     }
 
-    plt.figure(figsize=(10, 6))
-    plt.bar(results.keys(), results.values(), color='skyblue')
+    plt.figure(figsize=(12, 7))
+    plt.bar(results.keys(), results.values(), color='skyblue', alpha=0.8)
     plt.title(f"Comparison of SIR Model Results for Different Centrality Measures")
     plt.xlabel("Centrality Measure")
     plt.ylabel(f"Number of Infected Nodes (β={beta:.2f})")
