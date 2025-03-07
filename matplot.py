@@ -155,6 +155,3 @@ def plot_metric_vs_beta(G, initial_infected, gamma, beta_values, centrality_meas
     plt.grid(True)
     st.pyplot(plt)
 
-beta_values = np.linspace(0.01, 1.0, 20)
-initial_infected = random.choice(list(G.nodes()))
-plot_metric_vs_beta(G, initial_infected, gamma, beta_values, 'Closeness Centrality', L)
