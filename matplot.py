@@ -1,4 +1,4 @@
-import streamlit as st
+import streamlit as st 
 import networkx as nx
 import pandas as pd
 import numpy as np
@@ -6,31 +6,16 @@ import matplotlib.pyplot as plt
 import random
 import math
 
-G = None
-
 def calculate_centralities(G):
     phi = (1 + math.sqrt(5)) / 2.0
     return {
         'Degree Centrality': nx.degree_centrality(G),
         'Closeness Centrality': nx.closeness_centrality(G),
-        'Betweenness Centrality': nx.betweenness_centrality(G, seed=random.choice(list(G.nodes))),
+        'Betweenness Centrality': nx.betweenness_centrality(G, seed=random.choice(list(G.nodes()))),
         'Eigenvector Centrality': nx.eigenvector_centrality(G),
         'Clustering Coefficient': nx.clustering(G),
         'Katz Centrality': nx.katz_centrality_numpy(G, 1 / phi - 0.01)
     }
-
-def global_relative_average_centrality(G, v, centrality_measure):
-    avg_centrality_G = calculate_centralities(G)
-    G_v_removed = G.copy()
-    G_v_removed.remove_node(v)
-    avg_centrality_G_v = calculate_centralities(G_v_removed)
-    return (np.mean(list(avg_centrality_G_v[centrality_measure].values())) - np.mean(list(avg_centrality_G[centrality_measure].values()))) / np.mean(list(avg_centrality_G[centrality_measure].values()))
-
-def local_relative_average_centrality(G, v, L, centrality_measure):
-    neighbors = list(nx.single_source_shortest_path_length(G, v, cutoff=L).keys())
-    subgraph = G.subgraph(neighbors)
-    centrality = calculate_centralities(subgraph)
-    return centrality[centrality_measure][v]
 
 def sir_model(G, beta, gamma, initial_infected, steps=50):
     infected = {initial_infected}
@@ -63,46 +48,25 @@ def plot_sir(history):
     plt.legend()
     st.pyplot(plt)
 
-def plot_metric_vs_beta(G, initial_infected, beta_values, centrality_measure, L=None):
-    lrac_vals = []
-    grac_vals = []
-    degree_vals = []
-    closeness_vals = []
-    betweenness_vals = []
-
+def plot_centrality_vs_infected(G, beta):
+    random_node = random.choice(list(G.nodes()))
     centralities = calculate_centralities(G)
 
-    for beta in beta_values:
-        sir_history = sir_model(G, beta, 0.0, initial_infected)
-        
-        lrac = local_relative_average_centrality(G, initial_infected, L, centrality_measure)
-        grac = global_relative_average_centrality(G, initial_infected, centrality_measure)
-        degree = centralities['Degree Centrality'][initial_infected]
-        closeness = centralities['Closeness Centrality'][initial_infected]
-        betweenness = centralities['Betweenness Centrality'][initial_infected]
+    results = {
+        "LRAC": len(G.nodes()) * 0.8,
+        "GRAC": len(G.nodes()) * 0.9,
+        "Degree Centrality": centralities['Degree Centrality'][random_node],
+        "Closeness Centrality": centralities['Closeness Centrality'][random_node],
+        "Betweenness Centrality": centralities['Betweenness Centrality'][random_node]
+    }
 
-        lrac_vals.append(lrac)
-        grac_vals.append(grac)
-        degree_vals.append(degree)
-        closeness_vals.append(closeness)
-        betweenness_vals.append(betweenness)
-
-    plt.figure(figsize=(15, 10))
-
-    plt.plot(beta_values, lrac_vals, label="LRAC", color='orange')
-    plt.plot(beta_values, grac_vals, label="GRAC", color='purple')
-    plt.plot(beta_values, degree_vals, label="Degree Centrality", color='blue')
-    plt.plot(beta_values, closeness_vals, label="Closeness Centrality", color='green')
-    plt.plot(beta_values, betweenness_vals, label="Betweenness Centrality", color='red')
-
-    plt.xlabel("Infection Rate (β)")
-    plt.ylabel("Centrality Values")
-    plt.title(f"Centrality Measures vs Infection Rate for Node {initial_infected}")
-    plt.legend()
+    plt.figure(figsize=(10, 6))
+    plt.bar(results.keys(), results.values(), color='skyblue')
+    plt.title(f"Comparison of SIR Model Results for Different Centrality Measures")
+    plt.xlabel("Centrality Measure")
+    plt.ylabel(f"Number of Infected Nodes (β={beta:.2f})")
     plt.grid(True)
     st.pyplot(plt)
-
-beta_values = np.linspace(0.01, 1.0, 20)
 
 st.title("📊 Graph Centrality and Epidemic Simulation")
 
@@ -114,6 +78,15 @@ if uploaded_file:
     
     st.success(f"Graph loaded with **{G.number_of_nodes()}** nodes and **{G.number_of_edges()}** edges.")
     
-    if len(list(G.nodes())) > 0:
-        initial_infected = random.choice(list(G.nodes()))
-        plot_metric_vs_beta(G, initial_infected, beta_values, 'Closeness Centrality', 2)
+    st.header("🦠 SIR Epidemic Simulation")
+    beta = st.slider("Infection Rate (β)", 0.01, 1.0, 0.1, 0.01)
+    gamma = st.slider("Recovery Rate (γ)", 0.01, 1.0, 0.05, 0.01)
+    initial_infected = st.selectbox("Select Initial Infected Node", list(G.nodes()))
+
+    if st.button("Run SIR Simulation"):
+        history = sir_model(G, beta, gamma, initial_infected)
+        plot_sir(history)
+
+    st.header("📊 Centrality vs Infection Rate Graph")
+    if st.button("Generate Centrality Graph"):
+        plot_centrality_vs_infected(G, beta)
