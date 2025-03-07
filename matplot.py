@@ -18,10 +18,14 @@ df = pd.DataFrame(data)
 st.title("Centrality Measures vs Infection Rate")
 
 # Upload dataset option
-uploaded_file = st.file_uploader("Upload your dataset", type=["csv"])
+uploaded_file = st.file_uploader("Upload your dataset", type=["csv", "txt"])
 
 if uploaded_file is not None:
-    df = pd.read_txt(uploaded_file)
+    if uploaded_file.name.endswith(".csv"):
+        df = pd.read_csv(uploaded_file)
+    elif uploaded_file.name.endswith(".txt"):
+        df = pd.read_csv(uploaded_file, delim_whitespace=True, header=None)
+        df.columns = ["Beta", "LRAC", "GRAC", "Degree Centrality", "Closeness Centrality", "Betweenness Centrality"]
     st.success("Dataset uploaded successfully!")
 
 # Slider for Beta
