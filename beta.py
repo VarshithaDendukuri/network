@@ -1,76 +1,36 @@
 import streamlit as st
-import networkx as nx
-import numpy as np
 import matplotlib.pyplot as plt
-import random
 import pandas as pd
 
-def calculate_centralities(G):
-    return {
-        'Degree Centrality': nx.degree_centrality(G),
-        'Closeness Centrality': nx.closeness_centrality(G),
-        'Betweenness Centrality': nx.betweenness_centrality(G)
-    }
+# Data from the table
+data = {
+    "Beta": [0.02, 0.04, 0.06, 0.08, 0.10, 0.12, 0.14, 0.15, 0.20, 0.30],
+    "LRAC": [299, 378, 420, 425, 435, 443, 446, 439, 449, 452],
+    "GRAC": [312, 392, 411, 423, 434, 437, 445, 435, 449, 452],
+    "Degree Centrality": [186, 298, 325, 373, 373, 397, 407, 403, 406, 439],
+    "Closeness Centrality": [186, 291, 321, 376, 377, 394, 412, 409, 415, 434],
+    "Betweenness Centrality": [175, 288, 325, 376, 368, 393, 399, 409, 418, 433]
+}
 
-def sir_model(G, beta, gamma, initial_infected, steps=50):
-    infected = {initial_infected}
-    recovered = set()
-    susceptible = set(G.nodes()) - infected
-    
-    for _ in range(steps):
-        new_infected = set()
-        for node in infected:
-            for neighbor in G.neighbors(node):
-                if neighbor in susceptible and np.random.rand() < beta:
-                    new_infected.add(neighbor)
-        
-        recovered.update(node for node in infected if np.random.rand() < gamma)
-        infected = (infected | new_infected) - recovered
-        susceptible -= infected
-    
-    return len(infected)
+# Convert data into DataFrame
+df = pd.DataFrame(data)
 
-def plot_centrality_vs_infected(G, beta):
-    random_node = random.choice(list(G.nodes()))
-    centralities = calculate_centralities(G)
+st.title("Centrality Measures vs Infection Rate")
 
-    sir_infected = sir_model(G, beta, 0.02, random_node)
-    
-    # Normalize Centrality Values
-    max_degree = max(centralities['Degree Centrality'].values())
-    max_closeness = max(centralities['Closeness Centrality'].values())
-    max_betweenness = max(centralities['Betweenness Centrality'].values())
-    
-    normalized_degree = centralities['Degree Centrality'][random_node] * sir_infected / max_degree
-    normalized_closeness = centralities['Closeness Centrality'][random_node] * sir_infected / max_closeness
-    normalized_betweenness = centralities['Betweenness Centrality'][random_node] * sir_infected / max_betweenness
+# Slider for Beta
+beta = st.slider("Select Beta Value", min_value=0.02, max_value=0.30, step=0.02)
 
-    results = {
-        "LRAC": sir_infected,
-        "GRAC": sir_infected,
-        "Degree Centrality": normalized_degree,
-        "Closeness Centrality": normalized_closeness,
-        "Betweenness Centrality": normalized_betweenness
-    }
+# Filter data according to the selected Beta value
+filtered_df = df[df["Beta"] == beta]
 
-    plt.figure(figsize=(12, 7))
-    plt.bar(results.keys(), results.values(), color='skyblue', alpha=0.8)
-    plt.title(f"Comparison of SIR Model Results for Different Centrality Measures")
+if not filtered_df.empty:
+    plt.figure(figsize=(10, 6))
+    plt.bar(["LRAC", "GRAC", "Degree Centrality", "Closeness Centrality", "Betweenness Centrality"],
+            filtered_df.iloc[0, 1:], color='skyblue')
+    plt.title(f"Comparison of SIR Model Results for Beta = {beta}")
     plt.xlabel("Centrality Measure")
-    plt.ylabel(f"Number of Infected Nodes (β={beta:.2f})")
+    plt.ylabel("Number of Infected Nodes")
     plt.grid(True)
     st.pyplot(plt)
-
-st.title("📊 Centrality vs Infection Rate Visualization")
-
-uploaded_file = st.file_uploader("Upload Edge List File (CSV)", type=["csv", "txt"])
-
-if uploaded_file:
-    df = pd.read_csv(uploaded_file, delim_whitespace=True, header=None)
-    G = nx.from_pandas_edgelist(df, source=0, target=1)
-    st.success(f"Graph loaded with {G.number_of_nodes()} nodes and {G.number_of_edges()} edges.")
-
-    beta = st.slider("Select Infection Rate (β)", 0.01, 1.0, 0.1, 0.01)
-    
-    if st.button("Generate Graph"):
-        plot_centrality_vs_infected(G, beta)
+else:
+    st.warning("No data available for the selected Beta value")
