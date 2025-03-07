@@ -18,7 +18,7 @@ df = pd.DataFrame(data)
 st.title("Centrality Measures vs Infection Rate")
 
 # Upload dataset option
-uploaded_file = st.file_uploader("Upload your dataset", type=["csv"])
+uploaded_file = st.file_uploader("Upload your dataset", type=["csv,txt"])
 
 if uploaded_file is not None:
     df = pd.read_txt(uploaded_file)
