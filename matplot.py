@@ -60,6 +60,50 @@ def plot_sir(history):
     plt.ylabel("Number of Nodes")
     plt.legend()
     st.pyplot(plt)
+    def plot_metric_vs_beta(G, initial_infected, beta_values, centrality_measure, L=None):
+    lrac_vals = []
+    grac_vals = []
+    degree_vals = []
+    closeness_vals = []
+    betweenness_vals = []
+
+    centralities = calculate_centralities(G)
+
+    for beta in beta_values:
+        sir_history = sir_model(G, beta, 0.0, initial_infected)
+        
+        lrac = local_relative_average_centrality(G, initial_infected, L, centrality_measure)
+        grac = global_relative_average_centrality(G, initial_infected, centrality_measure)
+        degree = centralities['Degree Centrality'][initial_infected]
+        closeness = centralities['Closeness Centrality'][initial_infected]
+        betweenness = centralities['Betweenness Centrality'][initial_infected]
+
+        lrac_vals.append(lrac)
+        grac_vals.append(grac)
+        degree_vals.append(degree)
+        closeness_vals.append(closeness)
+        betweenness_vals.append(betweenness)
+
+    plt.figure(figsize=(15, 10))
+
+    plt.plot(beta_values, lrac_vals, label="LRAC", color='orange')
+    plt.plot(beta_values, grac_vals, label="GRAC", color='purple')
+    plt.plot(beta_values, degree_vals, label="Degree Centrality", color='blue')
+    plt.plot(beta_values, closeness_vals, label="Closeness Centrality", color='green')
+    plt.plot(beta_values, betweenness_vals, label="Betweenness Centrality", color='red')
+
+    plt.xlabel("Infection Rate (β)")
+    plt.ylabel("Centrality Values")
+    plt.title(f"Centrality Measures vs Infection Rate for Node {initial_infected}")
+    plt.legend()
+    plt.grid(True)
+    st.pyplot(plt)
+
+beta_values = np.linspace(0.01, 1.0, 20)
+if len(list(G.nodes())) > 0:
+    initial_infected = random.choice(list(G.nodes()))
+    plot_metric_vs_beta(G, initial_infected, beta_values, 'Closeness Centrality', L)
+
 
 def top_influential_nodes(G, centrality_measure, top_n=10):
     centralities = calculate_centralities(G)[centrality_measure]
@@ -117,41 +161,7 @@ if uploaded_file:
     if st.button("Run SIR Simulation", key="run_sir"):
         history = sir_model(G, beta, gamma, initial_infected)
         plot_sir(history)
-def plot_metric_vs_beta(G, initial_infected, gamma, beta_values, centrality_measure, L=None):
-    lrac_vals = []
-    grac_vals = []
-    degree_vals = []
-    closeness_vals = []
-    betweenness_vals = []
 
-    for beta in beta_values:
-        sir_history = sir_model(G, beta, gamma, initial_infected)
-        infected_nodes = sir_history[-1][1]  # Number of infected nodes at last step
 
-        lrac = local_relative_average_centrality(G, initial_infected, L, centrality_measure)
-        grac = global_relative_average_centrality(G, initial_infected, centrality_measure)
-        degree = calculate_centralities(G)['Degree Centrality'][initial_infected]
-        closeness = calculate_centralities(G)['Closeness Centrality'][initial_infected]
-        betweenness = calculate_centralities(G)['Betweenness Centrality'][initial_infected]
-
-        lrac_vals.append(lrac)
-        grac_vals.append(grac)
-        degree_vals.append(degree)
-        closeness_vals.append(closeness)
-        betweenness_vals.append(betweenness)
-
-    plt.figure(figsize=(15, 10))
-
-    plt.plot(beta_values, lrac_vals, label="LRAC", color='orange')
-    plt.plot(beta_values, grac_vals, label="GRAC", color='purple')
-    plt.plot(beta_values, degree_vals, label="Degree Centrality", color='blue')
-    plt.plot(beta_values, closeness_vals, label="Closeness Centrality", color='green')
-    plt.plot(beta_values, betweenness_vals, label="Betweenness Centrality", color='red')
-
-    plt.xlabel("Infection Rate (β)")
-    plt.ylabel("Centrality Values")
-    plt.title(f"Centrality Measures vs Infection Rate for Node {initial_infected}")
-    plt.legend()
-    plt.grid(True)
-    st.pyplot(plt)
+    
 
