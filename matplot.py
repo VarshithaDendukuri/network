@@ -21,7 +21,7 @@ st.title("Centrality Measures vs Infection Rate")
 uploaded_file = st.file_uploader("Upload your dataset", type=["csv,txt"])
 
 if uploaded_file is not None:
-    df = pd.read_txt(uploaded_file)
+    df = pd.read_csv(uploaded_file)
     st.success("Dataset uploaded successfully!")
 
 # Slider for Beta
