@@ -60,7 +60,7 @@ def plot_sir(history):
     plt.ylabel("Number of Nodes")
     plt.legend()
     st.pyplot(plt)
-    def plot_metric_vs_beta(G, initial_infected, beta_values, centrality_measure, L=None):
+def plot_metric_vs_beta(G, initial_infected, beta_values, centrality_measure, L=None):
     lrac_vals = []
     grac_vals = []
     degree_vals = []
