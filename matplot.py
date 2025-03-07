@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 import random
 import math
 
+G = None
+
 def calculate_centralities(G):
     phi = (1 + math.sqrt(5)) / 2.0
     return {
@@ -60,6 +62,7 @@ def plot_sir(history):
     plt.ylabel("Number of Nodes")
     plt.legend()
     st.pyplot(plt)
+
 def plot_metric_vs_beta(G, initial_infected, beta_values, centrality_measure, L=None):
     lrac_vals = []
     grac_vals = []
@@ -100,15 +103,6 @@ def plot_metric_vs_beta(G, initial_infected, beta_values, centrality_measure, L=
     st.pyplot(plt)
 
 beta_values = np.linspace(0.01, 1.0, 20)
-if len(list(G.nodes())) > 0:
-    initial_infected = random.choice(list(G.nodes()))
-    plot_metric_vs_beta(G, initial_infected, beta_values, 'Closeness Centrality', L)
-
-
-def top_influential_nodes(G, centrality_measure, top_n=10):
-    centralities = calculate_centralities(G)[centrality_measure]
-    sorted_nodes = sorted(centralities.items(), key=lambda x: x[1], reverse=True)[:top_n]
-    return sorted_nodes
 
 st.title("📊 Graph Centrality and Epidemic Simulation")
 
@@ -120,48 +114,6 @@ if uploaded_file:
     
     st.success(f"Graph loaded with **{G.number_of_nodes()}** nodes and **{G.number_of_edges()}** edges.")
     
-    st.header("🔍 Local Centrality Analysis")
-    L = st.slider("Select Level L", 1, 5, 2, key="local_L")
-    centrality_measure = st.selectbox("Choose Centrality Measure", list(calculate_centralities(G).keys()), key="local_centrality_measure")
-    
-    if st.button("Compute Local Centrality", key="compute_local"):
-        v = random.choice(list(G.nodes()))
-        st.session_state.local_result = local_relative_average_centrality(G, v, L, centrality_measure)
-        st.session_state.local_node = v
-    
-    if st.session_state.get("local_result") is not None:
-        st.info(f"Local Relative Average Centrality for node **{st.session_state.local_node}**: **{st.session_state.local_result:.4f}**")
-    
-    st.header("🌍 Global Centrality Analysis")
-    global_node = st.selectbox("Select Node for Global Centrality", list(G.nodes()), key="global_node_select")
-    global_centrality_measure = st.selectbox("Choose Centrality Measure", list(calculate_centralities(G).keys()), key="global_centrality_measure")
-    
-    if st.button("Compute Global Centrality", key="compute_global"):
-        st.session_state.global_result = global_relative_average_centrality(G, global_node, global_centrality_measure)
-        st.session_state.global_node = global_node
-    
-    if st.session_state.get("global_result") is not None:
-        st.info(f"Global Relative Average Centrality for node **{st.session_state.global_node}**: **{st.session_state.global_result:.4f}**")
-    
-    st.header("🏆 Top 10 Influential Nodes")
-    top_centrality_measure = st.selectbox("Choose Centrality Measure for Top Nodes", list(calculate_centralities(G).keys()), key="top_centrality_measure")
-    
-    if st.button("Compute Top 10 Influential Nodes", key="compute_top"):
-        st.session_state.top_nodes = top_influential_nodes(G, top_centrality_measure)
-    
-    if st.session_state.get("top_nodes"):
-        st.write("### Top 10 Nodes by Centrality (Persistent View)")
-        st.table(pd.DataFrame(st.session_state.top_nodes, columns=["Node", "Centrality Value"]))
-    
-    st.header("🦠 SIR Epidemic Simulation")
-    beta = st.slider("Infection Rate (β)", 0.01, 1.0, 0.1, 0.01, key="beta")
-    gamma = st.slider("Recovery Rate (γ)", 0.01, 1.0, 0.05, 0.01, key="gamma")
-    initial_infected = st.selectbox("Select Initial Infected Node", list(G.nodes()), key="initial_infected")
-    
-    if st.button("Run SIR Simulation", key="run_sir"):
-        history = sir_model(G, beta, gamma, initial_infected)
-        plot_sir(history)
-
-
-    
-
+    if len(list(G.nodes())) > 0:
+        initial_infected = random.choice(list(G.nodes()))
+        plot_metric_vs_beta(G, initial_infected, beta_values, 'Closeness Centrality', 2)
