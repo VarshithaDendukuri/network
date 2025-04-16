@@ -1,6 +1,6 @@
 # 🌎 Network Influencers – Graph Centrality & Epidemic Simulation  
 
-### 🌐 Live Demo: [Network Influencers](https://network-influencer.streamlit.app/)  
+### 🌐 Live Demo: [Network Influencers](https://networkinfluencers.streamlit.app/)  
 
 ## 🚀 Overview  
 **Network Influencers** is an interactive tool for **graph analysis and epidemic simulation** using **Streamlit** and **NetworkX**. It enables users to:  
